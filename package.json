@@ -11,7 +11,10 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "build:scripts": "tsc scripts/update-schema.ts --outDir dist/scripts --target es2020 --module commonjs",
+    "db:update": "npm run build:scripts && node dist/scripts/update-schema.js",
+    "db:update:dev": "tsx scripts/update-schema.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
