@@ -1,0 +1,134 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # Test database service
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'pnpm'
+        
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: Generate Prisma Client
+      run: pnpm db:generate
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        
+    - name: Run database migration
+      run: pnpm db:deploy
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        
+    - name: TypeScript type checking
+      run: pnpm type-check
+      
+    - name: Run ESLint
+      run: pnpm lint
+      
+    - name: Check code formatting
+      run: pnpm format:check
+      
+    - name: Run tests
+      run: pnpm test:ci
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXT_PUBLIC_API_URL: http://localhost:3000
+        
+    - name: Build application
+      run: pnpm build
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        NEXT_PUBLIC_API_URL: http://localhost:3000
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'pnpm'
+        
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: Generate Prisma Client with types
+      run: pnpm db:generate
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: Run production database migration
+      run: pnpm db:deploy
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
+    - name: TypeScript build check
+      run: pnpm type-check
+      
+    - name: Build production application
+      run: pnpm build
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nextjs-typescript-build
+        path: |
+          .next/
+          public/
+          package.json
+          pnpm-lock.yaml
+          prisma/
+        retention-days: 30
+        
+    - name: Deploy notification
+      run: |
+        echo "✅ TypeScript build completed successfully!"
+        echo "🚀 Ready for deployment to your hosting platform"
