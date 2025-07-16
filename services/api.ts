@@ -13,7 +13,22 @@ export class ApiError extends Error {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 function isBuildTime(): boolean {
-  return process.env.CI === "true" && process.env.NODE_ENV !== "test";
+  // Quick Vercel check
+  if (process.env.VERCEL && typeof window === "undefined") {
+    console.log("🔧 Vercel build detected, skipping API calls");
+    return true;
+  }
+
+  // CI environments
+  if (
+    (process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true") &&
+    process.env.NODE_ENV !== "test"
+  ) {
+    console.log("🔧 CI build detected, skipping API calls");
+    return true;
+  }
+
+  return false;
 }
 
 // Base fetch function
