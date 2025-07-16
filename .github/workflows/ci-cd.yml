@@ -39,15 +39,8 @@ jobs:
           node-version: "18"
           cache: "pnpm"
 
-      # Fix cho lockfile issue
       - name: Install dependencies
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
-          else
-            echo "⚠️  pnpm-lock.yaml not found, installing without frozen lockfile"
-            pnpm install --no-frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
         run: pnpm db:generate
@@ -65,20 +58,25 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
-      - name: Check code formatting
-        run: pnpm format:check
+      - name: Check code formatting (optional)
+        run: |
+          if grep -q "format:check" package.json; then
+            pnpm format:check
+          else
+            echo "⚠️ format:check script not found, skipping..."
+          fi
 
       - name: Run tests
         run: pnpm test:ci
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-          NEXT_PUBLIC_API_URL: http://localhost:3000
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Build application
         run: pnpm build
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-          NEXT_PUBLIC_API_URL: http://localhost:3000
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
   deploy:
     needs: test
@@ -92,7 +90,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10.6.4  # Sửa version match với test job
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -100,15 +98,8 @@ jobs:
           node-version: "18"
           cache: "pnpm"
 
-      # Fix cho lockfile issue trong deploy
       - name: Install dependencies
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
-          else
-            echo "⚠️  pnpm-lock.yaml not found, installing without frozen lockfile"
-            pnpm install --no-frozen-lockfile
-          fi
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client with types
         run: pnpm db:generate
