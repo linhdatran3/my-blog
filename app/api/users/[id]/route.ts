@@ -5,12 +5,12 @@ import { NextResponse } from "next/server";
 // GET - Lấy user theo ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id: (await params).id,
       },
     });
 
@@ -37,7 +37,7 @@ export async function GET(
 // PUT - Cập nhật user
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const body = await request.json();
@@ -45,7 +45,7 @@ export async function PUT(
 
     const user = await prisma.user.update({
       where: {
-        id: params.id,
+        id: (await params).id,
       },
       data: {
         email: email || undefined,
@@ -79,12 +79,12 @@ export async function PUT(
 // DELETE - Xóa user
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await prisma.user.delete({
       where: {
-        id: params.id,
+        id: (await params).id,
       },
     });
 
