@@ -1,7 +1,7 @@
 "use client";
 import { useUsers } from "@/hooks/useUsers";
 import { ApiResponse, IUser } from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function UserSection({ users }: { users: IUser[] }) {
   const [loading, setLoading] = useState(false);
@@ -91,6 +91,16 @@ export default function UserSection({ users }: { users: IUser[] }) {
     length: users?.length,
     firstUser: users?.[0],
   });
+
+  useEffect(() => {
+    fetch("https://my-blog-pearl-alpha.vercel.app/api/users")
+      .then((response) => {
+        console.log("✅ Response headers:", [...response.headers.entries()]);
+        return response.json();
+      })
+      .then((data) => console.log("✅ Data:", data))
+      .catch((error) => console.error("❌ Error:", error));
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
