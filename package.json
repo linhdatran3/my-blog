@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && husky install || true",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -23,7 +23,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:deploy": "prisma migrate deploy",
     "build:scripts": "tsc scripts/update-schema.ts --outDir dist/scripts --target es2020 --module commonjs",
-    "clean": "rm pnpm-lock.yaml rm -rf node_modules"
+    "setup": "bash scripts/setup.sh",
+    "clean": "npm run setup"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",

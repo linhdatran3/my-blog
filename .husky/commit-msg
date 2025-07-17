@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+# Validate commit message format
+echo "📝 Validating commit message format..."
+npx --no-install commitlint --edit "$1"
+
+# Only show success message if commitlint passed
+if [ $? -eq 0 ]; then
+  echo "✅ Commit message format is valid!"
+else
+  echo "❌ Commit message format is invalid!"
+  exit 1
+fi

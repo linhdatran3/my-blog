@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+# Run type checking
+echo "🔍 Running type check..."
+npm run type-check
+
+# Run prettier formatting
+echo "🔧 Running prettier..."
+pnpm run format
+
+# Run lint-staged for linting and formatting
+echo "🔧 Running lint and format on staged files..."
+npx lint-staged
+
+# Run tests
+echo "🧪 Running tests..."
+npm run test:ci
+
+echo "✅ Pre-commit checks passed!"
