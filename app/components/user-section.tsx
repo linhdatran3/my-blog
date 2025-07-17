@@ -1,4 +1,5 @@
 "use client";
+import { useUsers } from "@/hooks/useUsers";
 import { ApiResponse, IUser } from "@/types";
 import { useState } from "react";
 
@@ -6,6 +7,9 @@ export default function UserSection({ users }: { users: IUser[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const { data } = useUsers();
+
+  console.log("dataa", data?.data);
 
   // Form state
   const [formData, setFormData] = useState({
