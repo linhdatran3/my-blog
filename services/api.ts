@@ -108,6 +108,8 @@ export const api = {
 // Server-side với caching
 export const serverApi = {
   get: <T>(endpoint: string, revalidate?: number) => {
+    // KHÔNG check isBuildTime() trong server API calls
+    console.log("🔄 Server API call:", endpoint);
     const options: RequestInit = { method: "GET" };
     if (revalidate) {
       options.next = { revalidate };

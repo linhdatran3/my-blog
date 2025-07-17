@@ -82,6 +82,12 @@ export default function UserSection({ users }: { users: IUser[] }) {
   //     fetchUsers();
   //   }, []);
 
+  console.log("🎨 UserSection received users:", {
+    users,
+    length: users?.length,
+    firstUser: users?.[0],
+  });
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
