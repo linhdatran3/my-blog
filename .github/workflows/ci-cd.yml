@@ -8,14 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       deploy:
-        description: 'Deploy after tests?'
+        description: "Deploy after tests?"
         required: true
-        default: true
+        default: false
         type: boolean
       environment:
-        description: 'Deployment environment'
+        description: "Deployment environment"
         required: true
-        default: 'production'
+        default: "production"
         type: choice
         options:
           - production
@@ -97,12 +97,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    # Chỉ deploy khi:
-    # 1. Manual trigger với deploy = true
-    # 2. Hoặc manual workflow_dispatch
-    if: |
-      (github.event_name == 'workflow_dispatch' && inputs.deploy) ||
-      (github.event_name == 'workflow_dispatch')
+    # Chỉ deploy khi manual trigger VÀ chọn deploy = true
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
 
     steps:
       - name: Checkout code
