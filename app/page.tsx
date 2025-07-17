@@ -1,11 +1,9 @@
-import { userServerApi } from "@/services/user";
+import { userApi } from "@/services/user";
 import UserSection from "./components/user-section";
 
 export default async function UserDemo() {
-  console.log("🔍 Server component executing...");
-
   try {
-    const users = await userServerApi.getAll(60);
+    const users = await userApi.getAll();
 
     console.log("📊 Server API response:", {
       users: users,
