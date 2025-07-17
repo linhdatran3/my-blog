@@ -13,10 +13,16 @@ export class ApiError extends Error {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 function isBuildTime(): boolean {
-  // Quick Vercel check
-  if (process.env.VERCEL && typeof window === "undefined") {
-    console.log("🔧 Vercel build detected, skipping API calls");
-    return true;
+  // Vercel build vs runtime check
+  if (process.env.VERCEL) {
+    // Nếu có VERCEL_URL = đang runtime, không phải build
+    if (process.env.VERCEL_URL) {
+      console.log("🚀 Vercel runtime detected, making API calls");
+      return false;
+    } else {
+      console.log("🔧 Vercel build detected, skipping API calls");
+      return true;
+    }
   }
 
   // CI environments
