@@ -30,7 +30,7 @@ async function fetchAPI<T>(
     return {} as T;
   }
 
-  const url = `${BASE_URL}${endpoint}`;
+  const url = `${BASE_URL}/api${endpoint}`;
 
   try {
     const response = await fetch(url, {
