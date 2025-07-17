@@ -96,7 +96,13 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Chỉ deploy khi:
+    # 1. Manual trigger với deploy = true
+    # 2. Hoặc manual workflow_dispatch
+    if: |
+      (github.event_name == 'workflow_dispatch' && inputs.deploy) ||
+      (github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Checkout code
