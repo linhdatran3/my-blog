@@ -11,7 +11,20 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const BASE_URL = (() => {
+  // Build time - skip
+  if (isBuildTime()) return "";
+
+  // Production
+  if (process.env.NODE_ENV === "production") {
+    return process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://my-blog-pearl-alpha.vercel.app/";
+  }
+
+  // Development
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+})();
 
 // Base fetch function
 async function fetchAPI<T>(
@@ -31,6 +44,7 @@ async function fetchAPI<T>(
   }
 
   const url = `${BASE_URL}/api${endpoint}`;
+  console.log(`🌐 Fetching: ${url}`);
 
   try {
     const response = await fetch(url, {
