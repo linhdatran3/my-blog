@@ -4,7 +4,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public status?: number,
-    public data?: unknown
+    public data?: unknown,
   ) {
     super(message);
     this.name = "ApiError";
@@ -18,15 +18,9 @@ const BASE_URL = (() => {
   // Production
   if (process.env.NODE_ENV === "production") {
     return process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL}`
+      ? `${process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL}`
       : "https://my-blog-pearl-alpha.vercel.app/";
   }
-
-  console.log(
-    "process.env.NEXT_PUBLIC_API_URL",
-    process.env.NEXT_PUBLIC_API_URL
-  );
-  console.log("process.env.VERCEL_URL", process.env.VERCEL_URL);
 
   // Development
   return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -35,7 +29,7 @@ const BASE_URL = (() => {
 // Base fetch function
 async function fetchAPI<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   if (isBuildTime()) {
     // Validate endpoint exists in our API
@@ -70,7 +64,7 @@ async function fetchAPI<T>(
           errorData.error ||
           `HTTP ${response.status}: ${response.statusText}`,
         response.status,
-        errorData
+        errorData,
       );
     }
 

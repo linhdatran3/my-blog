@@ -12,6 +12,8 @@ export function ServerDebug({ data, label }: ServerDebugProps) {
       <pre className="mt-2 text-xs overflow-auto">
         {JSON.stringify(data, null, 2)}
       </pre>
+      <p>{JSON.stringify(process.env.NEXT_PUBLIC_API_URL)}</p>
+      <p>{JSON.stringify(process.env.VERCEL_URL)}</p>
     </details>
   );
 }
