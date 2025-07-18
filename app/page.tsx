@@ -11,7 +11,7 @@ export default async function UserDemo() {
   };
 
   try {
-    const users = await userServerApi.getAll(60);
+    const users = await userServerApi.getAll();
 
     return (
       <>

@@ -16,15 +16,18 @@ const BASE_URL = (() => {
   // Build time - skip
   if (isBuildTime()) return "";
 
-  // Production
-  if (process.env.NODE_ENV === "production") {
-    return process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
-      ? `${process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL}`
-      : "https://my-blog-pearl-alpha.vercel.app/";
+  const isServer = typeof window === "undefined";
+
+  if (isServer) {
+    // Server-side: luôn dùng absolute URL
+    if (process.env.NODE_ENV === "production") {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    return "http://localhost:3000";
   }
 
-  // Development
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  // Client-side
+  return "";
 })();
 
 // Base fetch function
@@ -134,7 +137,7 @@ export const api = {
 // Server-side với caching
 export const serverApi = {
   get: async <T>(endpoint: string, revalidate?: number) => {
-    console.log("🔄 Server API call:", endpoint);
+    console.warn("🔄 Server API call:", endpoint);
 
     const options: RequestInit = {
       method: "GET",
@@ -153,14 +156,14 @@ export const serverApi = {
         return await fetchAPI<ApiResponse<T>>(endpoint, options);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        console.log(
+        console.warn(
           `❌ Server API attempt ${attempt} failed:`,
           lastError.message,
         );
 
         if (attempt < 3) {
           const delay = 1000 * attempt; // 1s, 2s
-          console.log(`⏳ Retrying in ${delay}ms...`);
+          console.warn(`⏳ Retrying in ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
