@@ -1,5 +1,6 @@
 import { ApiResponse } from "@/types";
 import { isBuildTime } from "@/utils/function";
+import { waitForApiReady } from "@/utils/server-ready";
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -44,6 +45,17 @@ async function fetchAPI<T>(
   }
 
   const url = `${BASE_URL}/api${endpoint}`;
+
+  // Nếu server-side, check API readiness trước
+  if (typeof window === "undefined") {
+    const isReady = await waitForApiReady(endpoint);
+    if (!isReady) {
+      console.warn(
+        `⚠️ Proceeding with API call despite readiness check failure`,
+      );
+    }
+  }
+
   console.log(`🌐 Fetching: ${url}`);
 
   try {
@@ -121,15 +133,39 @@ export const api = {
 
 // Server-side với caching
 export const serverApi = {
-  get: <T>(endpoint: string, revalidate?: number) => {
-    // KHÔNG check isBuildTime() trong server API calls
+  get: async <T>(endpoint: string, revalidate?: number) => {
     console.log("🔄 Server API call:", endpoint);
-    const options: RequestInit = { method: "GET" };
+
+    const options: RequestInit = {
+      method: "GET",
+      cache: revalidate ? undefined : "no-store",
+    };
+
     if (revalidate) {
       options.next = { revalidate };
-    } else {
-      options.cache = "no-store";
     }
-    return fetchAPI<ApiResponse<T>>(endpoint, options);
+
+    // Retry logic với exponential backoff
+    let lastError: Error;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        return await fetchAPI<ApiResponse<T>>(endpoint, options);
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.log(
+          `❌ Server API attempt ${attempt} failed:`,
+          lastError.message,
+        );
+
+        if (attempt < 3) {
+          const delay = 1000 * attempt; // 1s, 2s
+          console.log(`⏳ Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw lastError!;
   },
 };
