@@ -4,7 +4,7 @@ interface ServerDebugProps {
 }
 
 export function ServerDebug({ data, label }: ServerDebugProps) {
-  if (process.env.NODE_ENV !== "development") return null;
+  //   if (process.env.NODE_ENV !== "development") return null;
 
   return (
     <details className="mb-4 p-4 border border-gray-300 rounded">
@@ -12,8 +12,8 @@ export function ServerDebug({ data, label }: ServerDebugProps) {
       <pre className="mt-2 text-xs overflow-auto">
         {JSON.stringify(data, null, 2)}
       </pre>
-      <p>{JSON.stringify(process.env.NEXT_PUBLIC_API_URL)}</p>
-      <p>{JSON.stringify(process.env.VERCEL_URL)}</p>
+      <p>a{JSON.stringify(process.env.NEXT_PUBLIC_API_URL)}</p>
+      <p>b{JSON.stringify(process.env.VERCEL_URL)}</p>
     </details>
   );
 }
