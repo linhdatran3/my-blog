@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/types";
-import { isBuildTime } from "@/utils/function";
+// import { isBuildTime } from "@/utils/function";
 import { waitForApiReady } from "@/utils/server-ready";
 export class ApiError extends Error {
   constructor(
@@ -14,7 +14,7 @@ export class ApiError extends Error {
 
 const BASE_URL = (() => {
   // Build time - skip
-  if (isBuildTime()) return "";
+  // if (isBuildTime()) return "";
 
   const isServer = typeof window === "undefined";
 
@@ -35,17 +35,17 @@ async function fetchAPI<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  if (isBuildTime()) {
-    // Validate endpoint exists in our API
-    // validateEndpoint(endpoint);
+  // if (isBuildTime()) {
+  //   // Validate endpoint exists in our API
+  //   // validateEndpoint(endpoint);
 
-    // Log for monitoring
-    console.warn(`⚠️ BUILD-TIME SKIP: ${endpoint}`);
+  //   // Log for monitoring
+  //   console.warn(`⚠️ BUILD-TIME SKIP: ${endpoint}`);
 
-    // Return typed fallback
-    // return createValidatedFallback<T>(endpoint);
-    return {} as T;
-  }
+  //   // Return typed fallback
+  //   // return createValidatedFallback<T>(endpoint);
+  //   return {} as T;
+  // }
 
   const url = `${BASE_URL}/api${endpoint}`;
 
