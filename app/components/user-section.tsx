@@ -1,5 +1,4 @@
 "use client";
-import { useUsers } from "@/hooks/useUsers";
 import { ApiResponse, IUser } from "@/types";
 import { useState } from "react";
 
@@ -7,9 +6,9 @@ export default function UserSection({ users }: { users: IUser[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { data } = useUsers();
+  // const { data } = useUsers();
 
-  console.log("dataa", data?.data);
+  // console.log("dataa", data?.data);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -85,12 +84,6 @@ export default function UserSection({ users }: { users: IUser[] }) {
   //   useEffect(() => {
   //     fetchUsers();
   //   }, []);
-
-  console.log("🎨 UserSection received users:", {
-    users,
-    length: users?.length,
-    firstUser: users?.[0],
-  });
 
   return (
     <div className="max-w-6xl mx-auto p-6">

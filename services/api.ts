@@ -1,5 +1,6 @@
 import { ApiResponse } from "@/types";
-import { isBuildTime } from "@/utils/function";
+// import { isBuildTime } from "@/utils/function";
+import { waitForApiReady } from "@/utils/server-ready";
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -11,26 +12,54 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const BASE_URL = (() => {
+  // Build time - skip
+  // if (isBuildTime()) return "";
+
+  const isServer = typeof window === "undefined";
+
+  if (isServer) {
+    // Server-side: luôn dùng absolute URL
+    if (process.env.NODE_ENV === "production") {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    return "http://localhost:3000";
+  }
+
+  // Client-side
+  return "";
+})();
 
 // Base fetch function
 async function fetchAPI<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  if (isBuildTime()) {
-    // Validate endpoint exists in our API
-    // validateEndpoint(endpoint);
+  // if (isBuildTime()) {
+  //   // Validate endpoint exists in our API
+  //   // validateEndpoint(endpoint);
 
-    // Log for monitoring
-    console.warn(`⚠️ BUILD-TIME SKIP: ${endpoint}`);
+  //   // Log for monitoring
+  //   console.warn(`⚠️ BUILD-TIME SKIP: ${endpoint}`);
 
-    // Return typed fallback
-    // return createValidatedFallback<T>(endpoint);
-    return {} as T;
+  //   // Return typed fallback
+  //   // return createValidatedFallback<T>(endpoint);
+  //   return {} as T;
+  // }
+
+  const url = `${BASE_URL}/api${endpoint}`;
+
+  // Nếu server-side, check API readiness trước
+  if (typeof window === "undefined") {
+    const isReady = await waitForApiReady(endpoint);
+    if (!isReady) {
+      console.warn(
+        `⚠️ Proceeding with API call despite readiness check failure`,
+      );
+    }
   }
 
-  const url = `${BASE_URL}/${endpoint}`;
+  console.log(`🌐 Fetching: ${url}`);
 
   try {
     const response = await fetch(url, {
@@ -107,15 +136,37 @@ export const api = {
 
 // Server-side với caching
 export const serverApi = {
-  get: <T>(endpoint: string, revalidate?: number) => {
-    // KHÔNG check isBuildTime() trong server API calls
-    console.log("🔄 Server API call:", endpoint);
-    const options: RequestInit = { method: "GET" };
+  get: async <T>(endpoint: string, revalidate?: number) => {
+    const options: RequestInit = {
+      method: "GET",
+      cache: revalidate ? undefined : "no-store",
+    };
+
     if (revalidate) {
       options.next = { revalidate };
-    } else {
-      options.cache = "no-store";
     }
-    return fetchAPI<ApiResponse<T>>(endpoint, options);
+
+    // Retry logic với exponential backoff
+    let lastError: Error;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        return await fetchAPI<ApiResponse<T>>(endpoint, options);
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.warn(
+          `❌ Server API attempt ${attempt} failed:`,
+          lastError.message,
+        );
+
+        if (attempt < 3) {
+          const delay = 1000 * attempt; // 1s, 2s
+          console.warn(`⏳ Retrying in ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw lastError!;
   },
 };
