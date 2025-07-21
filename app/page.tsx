@@ -10,8 +10,6 @@ export default async function UserDemo() {
     timestamp: new Date().toISOString(),
   };
 
-  console.log("page");
-
   try {
     const users = await userServerApi.getAll();
 

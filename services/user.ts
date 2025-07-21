@@ -25,7 +25,6 @@ export const userApi = {
 export const userServerApi = {
   getAll: async (revalidate?: number) => {
     try {
-      console.log("Get all");
       const res = await serverApi.get<IUser[]>(ENDPOINTS.users, revalidate);
       return res;
     } catch (error) {

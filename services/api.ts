@@ -137,8 +137,6 @@ export const api = {
 // Server-side với caching
 export const serverApi = {
   get: async <T>(endpoint: string, revalidate?: number) => {
-    console.warn("🔄 Server API call:", endpoint);
-
     const options: RequestInit = {
       method: "GET",
       cache: revalidate ? undefined : "no-store",

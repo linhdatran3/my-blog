@@ -23,10 +23,6 @@ export async function middleware(request: NextRequest) {
   const serverUptime = Date.now() - serverStartTime;
   const isServerReady = serverUptime > WARMUP_DELAY;
 
-  console.log(
-    `🔍 Middleware check - Uptime: ${serverUptime}ms, Ready: ${isServerReady}`,
-  );
-
   const response = NextResponse.next();
 
   // Add headers để components có thể check
